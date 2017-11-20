@@ -55,3 +55,7 @@ matrix of WALS datapoints
 with the darker dots corresponding to 
 [WALS 100 and 200 language samples](http://wals.info/chapter/s1#3.1._The_WALS_samples)
 
+
+## Acknowledgements
+
+Thanks to [@Anaphory](https://github.com/Anaphory/) for contributing this recipe.
