@@ -5,3 +5,5 @@ These scripts illustrate how to use basic R (i.e. without any external dependenc
 [simple_access_to_values.R](https://github.com/cldf/cookbook/blob/master/recipes/cldf_r/simple_access_to_values.R) (or its [notebook version](https://github.com/cldf/cookbook/blob/master/recipes/cldf_r/simple_access_to_values.ipynb)) illustrates a very basic analysis on the basis of the WALS CLDF dump.
 
 [wals_ids_comparison.R](https://github.com/cldf/cookbook/blob/master/recipes/cldf_r/wals_ids_comparison.R) (or its [notebook version](https://github.com/cldf/cookbook/blob/master/recipes/cldf_r/wals_ids_comparison.ipynb)) illustrates, in a more involved fashion, how to filter and analyse different CLDF dumps together (WALS and IDS, in this case).
+
+Another example where two different sources are combined and used to calculate distributions across the data sets can be found in the [Grambank recipes](https://github.com/clld/recipes/tree/master/Grambank#accessing-grambank-data-in-r).
