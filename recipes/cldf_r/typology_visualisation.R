@@ -1,0 +1,11 @@
+source("visualisation_helper.R")
+
+wals.data <- load.wals.data("https://cdstar.shh.mpg.de/bitstreams/EAEA0-7269-77E5-3E10-0/wals_dataset.cldf.zip")
+feature.set <- build.feature.set(wals.data, "129A")
+spatial.points.df <- build.spatial.points.df(feature.set)
+reprojected.df.x <- reproject.df(spatial.points.df)
+buffered.features.x <- buffer.features(reprojected.df.x, width=200000)
+voronoi.data <- make.voronoi(reprojected.df.x)
+clipped.features <- clip.features(buffered.features.x, voronoi.data)
+geo.information <- intersect.geo.information(clipped.features, reprojected.df.x)
+plot <- make.plot(geo.information)
