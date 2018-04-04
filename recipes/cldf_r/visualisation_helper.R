@@ -47,13 +47,23 @@ build.feature.set <- function(wals.data, feature) {
   filtered.values <- wals.data$values[wals.data$values$Parameter_ID == feature,]
   filtered.values <- droplevels(filtered.values)
   
-  filtered.languages <- wals.data$languages[wals.data$languages$ID %in% filtered.values$Language_ID,]
+  filtered.languages <- wals.data$languages
   colnames(filtered.languages)[1] <- "Language_ID"
   
-  merged.data <- merge(filtered.languages,
-                  wals.data$values[wals.data$values$Parameter_ID == feature,
-                                   c("Language_ID", "Value", "Code_ID", "Parameter_ID")],
+  filtered.params <- wals.data$parameters
+  colnames(filtered.params)[1] <- "Parameter_ID"
+  
+  merged.data <- merge(filtered.values, filtered.languages[,c("Language_ID", "Latitude", "Longitude")],
                   by = "Language_ID", all = TRUE)
+  merged.data <- merge(merged.data, filtered.params, by="Parameter_ID", all.x=TRUE)
+  
+  merged.data$Value <- as.character(merged.data$Value)
+  merged.data$Value[is.na(merged.data$Value)]<-"99 not sampled"
+  
+  merged.data <- merged.data[complete.cases(merged.data[,c("Longitude","Latitude")]),]
+  
+  merged.data <- merged.data[merged.data$Latitude<86 & merged.data$Latitude>-86,]
+  merged.data <- merged.data[merged.data$Longitude<175 & merged.data$Longitude>-175,]
   
   return(droplevels(merged.data))
 }
@@ -82,14 +92,14 @@ buffer.features <- function(reprojected.df, width) {
   return(reprojected.df.buffered)
 }
 
-make.voronoi <- function(buffered.features) {
+make.voronoi <- function(reproj.features) {
   # Code based on:
   # http://carsonfarmer.com/2009/09/voronoi-polygons-with-r/
   require(deldir)
   require(sp)
   
-  crds <- buffered.features@coords
-  z <- deldir(crds[,1], crds[,2])
+  crds <- reproj.features@coords
+  z <- deldir(jitter(crds[,1], factor=0.00001), jitter(crds[,2], factor=0.00001))
   w <- tile.list(z)
   polys <- vector(mode='list', length=length(w))
   
@@ -101,8 +111,8 @@ make.voronoi <- function(buffered.features) {
   
   SP <- SpatialPolygons(polys)
   voronoi <- SpatialPolygonsDataFrame(SP,
-                                      data=data.frame(x=crds[,1], 
-                                      y=crds[,2], 
+                                      data=data.frame(x=z$summary$x, 
+                                      y=z$summary$y, 
                                       ID=sapply(slot(SP, 'polygons'),function(x) slot(x, 'ID'))
     ),
     match.ID = "ID"
@@ -137,7 +147,7 @@ make.plot <- function(geo.information) {
   require(maps)
   require(randomcoloR)
   
-  plot.element <- fortify(geo.information, region="Name")
+  plot.element <- fortify(geo.information, region="Value")
   
   x <- plot.element$long
   y <- plot.element$lat
@@ -152,8 +162,8 @@ make.plot <- function(geo.information) {
   mapWorld <- borders("world", colour="gray50", fill="gray80")
   mp <- ggplot()+ 
     mapWorld+ 
-    geom_polygon(data = feat.pol.gg, aes(x=long, y=lat, group=group, fill=id))+ 
-    scale_fill_manual(values=c("grey60",randomColor(count = length(unique(feat.pol.gg$id))-1)))+
+    geom_polygon(data = plot.element, aes(x=long, y=lat, group=group, fill=id))+ 
+    scale_fill_manual(values=c("grey60",randomColor(count = length(unique(plot.element$id))-1)))+
     theme_minimal()
   
   return(mp)
