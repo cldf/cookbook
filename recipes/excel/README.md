@@ -126,3 +126,68 @@ cldf validate MyData.json
 ```
 
 (See the [pycldf](https://github.com/cldf/pycldf) repository for more information about the `cldf` command.)
+
+# A More Advanced Example
+
+> I am an expert on languages of a particular region/linguistic family. I have a spreadsheet in which rows are languages, columns are concepts, and cells contain the word for concept X in language Y. I would like to make these data available for re-use by ensuring they follow the CLDF format. Where do I start?
+
+Let's take the following data as a starting point:
+
+|       | ashes   | bird   | bone     | cloud  | eye    |
+|-------|---------|--------|----------|--------|--------|
+| Yem   | bèd-nā  | kàs-à  | mèg-ā    | šāːr-ù | áːf-ā  |
+| Chara | bˈend-a | kˈaf-a | mert-ˈa  | šˈač-a | ˈaːp-a |
+| Bench | ˈaːp-a  | šǒyt   | mèrt     | dùldűl | ȁp     |
+| Dorze | buɗ-o   | kapʼ-o | mekʼeð-a | guːl-e | aypʼ-e |
+
+([Data](http://starling.rinet.ru/new100/ggm.xls) taken from [here](http://starling.rinet.ru/cgi-bin/main.cgi?root=new100&encoding=utf-eng). You can find an Excel version of the data [in this repository](sample-data/Wide_Wordlist.xlsx).)
+
+This data is in "wide format" as opposed to "long format", i.e. [column headers are values, not variable names](http://vita.had.co.nz/papers/tidy-data.pdf).
+
+Depending on the complexity of the data in question, transforming the data from a wide to a long format might be more involved and external tools (e.g. [R](http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/), [csvkit](https://csvkit.readthedocs.io/en/1.0.3/)) might be required, although this problem can also be tackled [with Excel semi-automatically](https://www.listendata.com/2015/02/excel-formula-convert-data-from-wide-to.html).
+
+Essentially, we need to make the following modifications (analogously to the previous tutorial, you're free to change the Wordlist JSON to your needs; for the sake of this tutorial, we'll stick as closely as possible to the original):
+
+- add an ID column
+- add a header for the language column
+- move the data points into individual rows
+- add a Parameter_ID column in which to paste the concept labels
+
+| ID | Concept | Form     | Language_ID |
+|----|---------|----------|-------------|
+| 1  | ashes   | bèd-nā   | Yem         |
+| 2  | bird    | kàs-à    | Yem         |
+| 3  | bone    | mèg-ā    | Yem         |
+| 4  | cloud   | šāːr-ù   | Yem         |
+| 5  | eye     | áːf-ā    | Yem         |
+| 6  | ashes   | bˈend-a  | Chara       |
+| 7  | bird    | kˈaf-a   | Chara       |
+| 8  | bone    | mert-ˈa  | Chara       |
+| 9  | cloud   | šˈač-a   | Chara       |
+| 10 | eye     | ˈaːp-a   | Chara       |
+| 11 | ashes   | cʼyāk   | Bench       |
+| 12 | bird    | šǒyt     | Bench       |
+| 13 | bone    | mèrt     | Bench       |
+| 14 | cloud   | dùldűl   | Bench       |
+| 15 | eye     | ȁp       | Bench       |
+| 16 | ashes   | buɗ-o    | Dorze       |
+| 17 | bird    | kapʼ-o   | Dorze       |
+| 18 | bone    | mekʼeð-a | Dorze       |
+| 19 | cloud   | guːl-e   | Dorze       |
+| 20 | eye     | aypʼ-e   | Dorze       |
+
+(You can also find a CSV version of this table in [this repository](sample-data/Wide_Wordlist.csv).)
+
+## Adapting the Default Wordlist JSON
+
+As in the introductory tutorial, we now need to describe the data with the help of a JSON file. As a starting point, we're again going to use the Wordlist JSON. We have to change the following things:
+
+- file URL
+- delimiter
+- column name (`Parameter_ID` is `Concept`)
+
+You can find the modified JSON file [here in this repository](cldf/WideNarrow.json). This file can again be validated with the help of `pycldf`:
+
+```
+cldf validate WideNarrow.json
+```
