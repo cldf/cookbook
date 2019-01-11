@@ -1,0 +1,29 @@
+def clone_dataset_with_new_cognate_table(original_dataset, path):
+    """Create a copy of original_dataset, with the same urls and a new CognateTable"""
+    cognatetables = []
+    for t, table in enumerate(original_dataset.tables):
+        if table.common_props.get("dc:conformsTo", '').endswith('CognateTable'):
+            cognatetables.insert(0, t)
+        else:
+            # Make table urls absolute
+            table.url = Link(str(table.url.resolve(table._parent.base)))
+            for key in table.tableSchema.foreignKeys:
+                key.reference.resource = Link(
+                    str(key.reference.resource.resolve(table._parent.base)))
+    original_dataset.write_metadata(fname=path)
+
+    new_dataset = pycldf.Wordlist.from_metadata(path)
+    # Delete existing cognate tables
+    for t in cognatetables:
+        del new_dataset.tables[t]
+
+    # Add a new, local cognate table
+    output_rows = []
+    new_dataset.add_component(
+        "CognateTable")
+    if new_dataset["CognateTable"].url.resolve(table._parent.base).exists():
+        new_dataset["CognateTable"].url = Link(Path(path).stem + '-cognates.csv')
+    new_dataset["CognateTable", "Form_ID"].datatype = new_dataset["FormTable", "id"].datatype
+
+    new_dataset.write_metadata(fname=path)
+
