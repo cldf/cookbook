@@ -1,15 +1,26 @@
+from pathlib import Path
+
+def translate_path(url, old_base, new_base):
+    table_url = Path(url.resolve(old_base))
+    try:
+        table_url = table_url.relative_to(new_base)
+    except ValueError:
+        pass
+    return table_url
+
 def clone_dataset_with_new_cognate_table(original_dataset, path):
     """Create a copy of original_dataset, with the same urls and a new CognateTable"""
     cognatetables = []
+    base_path = Path(original_dataset.base).absolute()
     for t, table in enumerate(original_dataset.tables):
         if table.common_props.get("dc:conformsTo", '').endswith('CognateTable'):
             cognatetables.insert(0, t)
         else:
             # Make table urls absolute
-            table.url = Link(str(table.url.resolve(table._parent.base)))
+            table.url = Link(str(translate_path(table.url, base_path, path))
             for key in table.tableSchema.foreignKeys:
                 key.reference.resource = Link(
-                    str(key.reference.resource.resolve(table._parent.base)))
+                    str(translate_path(key.reference.resource, base_path, path)))
     original_dataset.write_metadata(fname=path)
 
     new_dataset = pycldf.Wordlist.from_metadata(path)
