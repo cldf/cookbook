@@ -14,6 +14,7 @@ Recipes for cooking with CLDF data
 - [accessing CLDF data from R](recipes/cldf_r/)
 - [reading and CLDF data with LingPy](recipes/cldf_lingpy)
 - [understanding CLDF data with visidata](recipes/visidata/WALS_JOIN.md)
+- [exploring CLDF data with datasette](recipes/datasette/README.md)
 
 
 ## CLDF and datatypes
