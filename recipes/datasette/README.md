@@ -47,14 +47,3 @@ example - are well specified in CLDF, thus can generically be made available for
 
 Navigating to the `LanguageTable` of the database in *datasette*'s interface will show
 a map with clusters of language locations.
-
-
-## Example: The World Phonotactics Database
-
-Exploration tools like *datasette* are particularly important for big datasets
-such as
-[The World Phonotactics Database](https://doi.org/10.5281/zenodo.3613570).
-
-Here is a screenshot of the map visualization of the `LanguageTable`:
-
-![phonotactics LanguageTable viewed with datasette](LanguageTable.png)
