@@ -34,10 +34,32 @@ as download for previous versions.
 Retrieving values for **all** features, and labeling the columns with feature names is a bit more complicated, though.
 Actually, **retrieving** all values is not the problem:
 ```sql
-
+SELECT
+    l.cldf_id as wals_code
+FROM
+    LanguageTable as l
+    JOIN ValueTable as v ON l.cldf_id = v.cldf_languageReference
+    JOIN CodeTable as c ON v.cldf_codeReference = c.cldf_id
+GROUP BY
+    l.cldf_id
+;
 ```
-
-We'll use a two-step process to cobble together a suitable SQL query.
+But how do we tease out the individual values and sort them into columns? We can exploit the fact that WALS has at most one
+value per language and feature, so the following construct works:
+```sql
+SELECT
+    l.cldf_id as wals_code,
+max(case when v.cldf_parameterReference = '1A' then c.Number || ' ' || c.cldf_name end) as '1A Consonant Inventories'
+FROM
+    LanguageTable as l
+    JOIN ValueTable as v ON l.cldf_id = v.cldf_languageReference
+    JOIN CodeTable as c ON v.cldf_codeReference = c.cldf_id
+GROUP BY
+    l.cldf_id
+;
+```
+But typing all `max(...) as ...` for 192 features is tedious.
+So we'll use a two-step process to cobble together a suitable SQL query.
 
 3. First, we run a query to retrieve the data which is needed to assemble the result set specification in the final query:
    ```sql
@@ -47,6 +69,37 @@ We'll use a two-step process to cobble together a suitable SQL query.
        ParameterTable as p
    ORDER BY
        p.cldf_id
-;
-
+   ;
+   ```
+4. Then we plug the result (stripping the final comma) into the full query:
+   ```sql
+   SELECT
+       l.cldf_id as wals_code,
+       l.cldf_iso639P3code as iso_code,
+       l.cldf_glottocode as glottocode,
+       l.cldf_name as Name,
+       l.cldf_latitude as latitude,
+       l.cldf_longitude as longitude,
+       l.Genus as genus,
+       l.Family as family,
+       l.cldf_macroarea as macroarea,
+       max(case when v.cldf_parameterReference = '1A' then c.Number || ' ' || c.cldf_name end) as '1A Consonant Inventories',
+       [...]
+   FROM
+       LanguageTable as l
+       JOIN ValueTable as v ON l.cldf_id = v.cldf_languageReference
+       JOIN CodeTable as c ON v.cldf_codeReference = c.cldf_id
+   GROUP BY
+       l.cldf_id,
+       l.cldf_iso639P3code,
+       l.cldf_glottocode,
+       l.cldf_name,
+       l.cldf_latitude,
+       l.cldf_longitude,
+       l.Genus,
+       l.Family,
+       l.cldf_macroarea
+   ORDER BY
+       l.cldf_id
+   ;
    ```
