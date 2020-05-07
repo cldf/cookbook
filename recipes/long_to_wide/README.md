@@ -103,3 +103,11 @@ So we'll use a two-step process to cobble together a suitable SQL query.
        l.cldf_id
    ;
    ```
+
+The [full query](matrix.sql) can be run against the SQLite database as follows
+```
+sqlite3 -header -csv wals2020.sqlite < matrix.sql > matrix.csv
+```
+to create a CSV table [matrix.csv](matrix.csv) which can be loaded into spreadsheet
+programs.
+

@@ -10,6 +10,7 @@ Recipes for cooking with CLDF data
 
 ## Reading and analyzing CLDF
 
+- [converting CLDF data to "wide" format](recipes/long_to_wide/README.md)
 - [plotting number of values per language on a map](recipes/plot_representation/)
 - [accessing CLDF data from R](recipes/cldf_r/)
 - [reading and CLDF data with LingPy](recipes/cldf_lingpy)
