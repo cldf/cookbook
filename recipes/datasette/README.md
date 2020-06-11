@@ -1,5 +1,7 @@
 # Using *datasette* to browse a CLDF dataset
 
+## Basics
+
 The `cldf` command, which can be installed with the Python package 
 [`pycldf`](https://pypi.org/project/pycldf/) provides functionality to load
 any CLDF dataset into a [SQLite](https://sqlite.org/index.html) database.
@@ -16,6 +18,9 @@ datasette PATH/TO/dataset.sqlite
 ```
 
 and visiting http://localhost:8001 in your browser.
+
+
+## Customization
 
 But *datasette* provides a full-featured plugin system, which allows adding 
 custom visualisations for the data. This can be paired with CLDF's metadata to
@@ -47,3 +52,8 @@ example - are well specified in CLDF, thus can generically be made available for
 
 Navigating to the `LanguageTable` of the database in *datasette*'s interface will show
 a map with clusters of language locations.
+
+
+## `datasette-cldf`
+
+A *datasette* setup which is even more tuned to CLDF data is available with the [datasette-cldf](https://github.com/cldf/datasette-cldf/blob/master/README.md) Python package.

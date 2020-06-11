@@ -18,6 +18,12 @@ Recipes for cooking with CLDF data
 - [exploring CLDF data with datasette](recipes/datasette/README.md)
 
 
+## Presenting CLDF data on the web
+
+- [Serving CLDF data from a clld app](recipes/clld/README.md)
+- [Serving CLDF data via *Datasette*](recipes/datasette/README.md)
+
+
 ## CLDF and datatypes
 
 - [CLDF and interlinear glossed text](recipes/igt)
