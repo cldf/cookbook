@@ -8,14 +8,17 @@ import argparse
 from collections import Counter
 
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
 import pycldf
 from clldutils.path import Path
-from pyglottolog.api import Glottolog
+try:
+    from pyglottolog.api import Glottolog
+except ImportError:
+    Glottolog = None
 
-matplotlib.use('Agg')
 
 
 def parameters_sampled(dataset):
@@ -43,19 +46,26 @@ def main(dataset, output, glottolog_repos, cmap):
 
     # Try to load language locations from the dataset
     locations = {}
-    for lang in Glottolog(glottolog_repos).languoids():
-        if lang.latitude is not None:
-            if lang.id not in locations:
-                locations[lang.id] = (lang.latitude, lang.longitude)
-            if lang.iso and lang.iso not in locations:
-                locations[lang.iso] = (lang.latitude, lang.longitude)
+    if Glottolog:
+        for lang in Glottolog(glottolog_repos).languoids():
+            if lang.latitude is not None:
+                if lang.id not in locations:
+                    locations[lang.id] = (lang.latitude, lang.longitude)
+                if lang.iso and lang.iso not in locations:
+                    locations[lang.iso] = (lang.latitude, lang.longitude)
 
     try:
         idcol = dataset["LanguageTable", "id"].name
         latcol = dataset["LanguageTable", "latitude"].name
         loncol = dataset["LanguageTable", "longitude"].name
-        gccol = dataset["LanguageTable", "glottocode"].name
-        isocol = dataset["LanguageTable", "iso639P3code"].name
+        try:
+            gccol = dataset["LanguageTable", "glottocode"].name
+        except KeyError:
+            pass
+        try:
+            isocol = dataset["LanguageTable", "iso639P3code"].name
+        except KeyError:
+            pass
         for row in dataset["LanguageTable"]:
             if row[latcol] is not None:
                 locations[row[idcol]] = row[latcol], row[loncol]
