@@ -1,6 +1,7 @@
 # Cookbook
 
-Recipes for cooking with CLDF data
+Recipes for cooking with [CLDF](https://cldf.clld.org) data
+
 
 ## Writing CLDF
 
@@ -16,6 +17,7 @@ Recipes for cooking with CLDF data
 - [reading and CLDF data with LingPy](recipes/cldf_lingpy)
 - [understanding CLDF data with visidata](recipes/visidata/WALS_JOIN.md)
 - [exploring CLDF data with datasette](recipes/datasette/README.md)
+- [exploring CLDF data with pycldf](recipes/pycldf/README.md)
 
 
 ## Presenting CLDF data on the web
