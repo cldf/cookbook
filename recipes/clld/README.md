@@ -15,8 +15,8 @@ by bootstrapping the codebase running `clld create`:
 
 1. Create a fresh virtual environment for the app project and activate it:
    ```shell script
-   python -m virtualenv myapp
-   source myapp/bin/activate
+   python -m virtualenv myenv
+   source myenv/bin/activate
    ```
 2. Install `clld` in this environment:
    ```shell script
@@ -28,7 +28,7 @@ by bootstrapping the codebase running `clld create`:
    ```
 4. Create the project skeleton (run `clld create -h` for help on command options):
    ```shell script
-   clld create maypp cldf_module=StructureDataset
+   clld create myapp cldf_module=StructureDataset
    ```
    We chose `cldf_module=StructureDataset`, because Tang's dataset contains
    typological data of the "standard" questionnaire format, which is best
@@ -121,6 +121,11 @@ clld initdb \
 --cldf ../cldf-datasets-tangclassifiers-105b8f2/cldf/StructureDataset-metadata.json \
 development.ini
 ```
+The following line can be used too, in case the previous version does not work for you
+```shell script
+clld initdb development.ini --cldf ~/cldf-datasets-tangclassifiers-105b8f2/cldf/StructureDataset-metadata.json --glottolog ~/glottolog-glottolog-d9da5e2/
+```
+
 and start the app at http://localhost:6543 via
 ```shell script
 pserve development.ini
