@@ -121,7 +121,7 @@ clld initdb \
 --cldf ../cldf-datasets-tangclassifiers-105b8f2/cldf/StructureDataset-metadata.json \
 development.ini
 ```
-The following line can be used too, in case the previous version does not work for you
+or if you cloned the repositories to your home directory:
 ```shell script
 clld initdb development.ini --cldf ~/cldf-datasets-tangclassifiers-105b8f2/cldf/StructureDataset-metadata.json --glottolog ~/glottolog-glottolog-d9da5e2/
 ```
