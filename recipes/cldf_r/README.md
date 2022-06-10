@@ -13,4 +13,56 @@ These scripts illustrate how to use basic R (i.e. without any external dependenc
 
 ## Working with CLDF via SQLite
 
-TODO
+As an example, we'll poke around in the [Glottolog CLDF data](https://github.com/glottolog/glottolog-cldf). Let's download release v4.6:
+
+```shell
+$ curl -LO https://github.com/glottolog/glottolog-cldf/archive/refs/tags/v4.6.zip
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 7622k    0 7622k    0     0   262k      0 --:--:--  0:00:28 --:--:--  255k
+$ unzip v4.6.zip 
+Archive:  v4.6.zip
+c8eefe82b4c87f3c566a8e5181bacf714661e18e
+   creating: glottolog-cldf-4.6/
+...
+```
+
+Now we need to install [pycldf](https://gihub.com/cldf/pycldf) and load the CLDF into SQLite:
+```shell
+$ pip install pycldf
+$ cldf createdb glottolog-cldf-4.6/cldf/cldf-metadata.json glottolog.sqlite
+INFO    <cldf:v1.0:StructureDataset at glottolog-cldf-4.6/cldf> loaded in glottolog.sqlite
+```
+
+Let's connect to the database via RSQLite:
+```r
+> library(RSQLite)
+> conn <- dbConnect(RSQLite::SQLite(), "glottolog.sqlite")
+> dbListTables(conn)
+[1] "CodeTable"              "LanguageTable"          "ParameterTable"        
+[4] "SourceTable"            "ValueTable"             "ValueTable_SourceTable"
+```
+
+The database schema (in particular table and column names) follows the rules described [here](https://github.com/cldf/pycldf/blob/de850772a72dbaa3350fd005b474cdd601278b1b/src/pycldf/db.py#L4-L39).
+
+Now we can let [dplyr](https://db.rstudio.com/r-packages/dplyr/) loose on the data:
+```r
+> library(dplyr)
+> languages <- tbl(conn, "languagetable")
+> values <- tbl(conn, "valuetable")
+> aes <- values %>% filter(cldf_parameterReference == "aes")
+
+> inner_join(aes, languages, by=c("cldf_languageReference" = "cldf_id")) %>% group_by(cldf_codeReference) %>% summarise(langs = count(cldf_languageReference))
+# Source:   lazy query [?? x 2]
+# Database: sqlite 3.38.5
+#   [glottolog.sqlite]
+  cldf_codeReference langs
+  <chr>              <int>
+1 aes-extinct         1250
+2 aes-moribund         414
+3 aes-nearly_extinct   351
+4 aes-not_endangered  2956
+5 aes-shifting        1837
+6 aes-threatened      1537
+```
