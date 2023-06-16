@@ -29,3 +29,8 @@ Recipes for cooking with [CLDF](https://cldf.clld.org) data
 ## CLDF and datatypes
 
 - [CLDF and interlinear glossed text](recipes/igt)
+
+
+## Misc
+
+- [Presentation on CLDF and large datasets](https://pad.gwdg.de/p/4Itkvh_pK)
