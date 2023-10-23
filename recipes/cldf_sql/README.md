@@ -3,6 +3,7 @@
 Thanks to the [CLDF SQL](https://github.com/cldf/cldf/blob/master/extensions/sql.md) extension,
 we can access (most) data in a CLDF dataset via SQL. To do so, we must first load the dataset into
 a SQLite databse, using the [`cldf createdb` command](https://github.com/cldf/pycldf#converting-a-cldf-dataset-to-an-sqlite-database).
+(For an introduction to SQL databases, see the [Software Carpentry lesson "Databases and SQL"](https://swcarpentry.github.io/sql-novice-survey/).)
 
 
 ## A first example with WALS
@@ -22,6 +23,31 @@ JOIN languagetable AS l
 GROUP BY l.cldf_id 
 ORDER BY c desc 
 LIMIT 20
+```
+
+Assuming the SQL query is stored in a file `wals.sql`, we can run it on the database using the [sqlite3](https://sqlite.org/cli.html) command
+```shell
+$ sqlite3 wals.sqlite < wals.sql
+English|159
+French|158
+German|157
+Russian|156
+Spanish|155
+Hungarian|155
+Greek (Modern)|155
+Finnish|155
+Turkish|154
+Mandarin|153
+Indonesian|153
+Japanese|151
+Georgian|150
+Amele|150
+Lezgian|149
+Korean|149
+Evenki|149
+Basque|149
+Supyire|148
+Hausa|148
 ```
 
 In much the same way we can investigate the somewhat famous sparsity of the WALS data by looking at the
