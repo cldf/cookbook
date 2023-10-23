@@ -284,7 +284,7 @@ CLDF metadata (for [CLTS](https://github.com/cldf-clts/clts/blob/v2.2.0/cldf-met
 should still go a long way towards reaching this understanding).
 
 What we get from standardization via CLDF is
-- uniform data access on filesystem level (allowing `cldf created` to find the relevant tables)
+- uniform data access on filesystem level (allowing `cldf createdb` to find the relevant tables)
 - uniform selection of values/forms associated with a language specified by Glottocode
 - transparent access to segments of word forms
 - unambiguous mapping to CLTS graphemes/BIPA sounds
