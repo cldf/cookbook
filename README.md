@@ -18,6 +18,7 @@ Recipes for cooking with [CLDF](https://cldf.clld.org) data
 - [understanding CLDF data with visidata](recipes/visidata/WALS_JOIN.md)
 - [exploring CLDF data with datasette](recipes/datasette/README.md)
 - [exploring CLDF data with pycldf](recipes/pycldf/README.md)
+- [using CLDF SQL to compare phoneme inventories extracted from wordlists with PHOIBLE](recipes/cldf_sql/README.md)
 
 
 ## Presenting CLDF data on the web
