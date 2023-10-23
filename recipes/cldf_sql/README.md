@@ -136,7 +136,7 @@ Use ".open FILENAME" to reopen on a persistent database.
 sqlite> 
 ```
 and then can run the following SQL statements:
-```sqlite
+```sql
 ATTACH DATABASE "phoible.sqlite" AS phoible;
 ATTACH DATABASE "clts.sqlite" AS clts;
 ATTACH DATABASE "lsi.sqlite" AS lsi;
@@ -168,7 +168,7 @@ with a [recursive common table expression](https://www.sqlite.org/lang_with.html
 [Simon Willison's blog post](https://til.simonwillison.net/sqlite/simple-recursive-cte) for a
 gentle introduction):
 
-```sqlite
+```sql
 CREATE TEMP VIEW lsigraphemes AS 
     SELECT DISTINCT grapheme
     FROM
@@ -199,7 +199,7 @@ aggregate all segments listed for one Glottocode, but select only segments from 
 inventory (i.e. a row in the `contributions.csv` table). This is because PHOIBLE may have [more than
 one inventory per Glottocode](https://phoible.org/languages/mala1464).
 
-```sqlite
+```sql
 CREATE TEMP VIEW phoiblegraphemes AS
     SELECT DISTINCT c.cltsgrapheme AS grapheme 
     FROM
@@ -234,7 +234,7 @@ Now the heavy lifting is done, and comparing the two sets of graphemes is straig
 query lists all vowels that appear in [LSI for Malayalam](https://lsi.clld.org/languages/MALAYALAM), but 
 not in [PHOIBLE inventory 1762](https://phoible.org/inventories/view/1762), pulling in the name of the
 corresponding CLTS sound:
-```sqlite
+```sql
 SELECT lsi.grapheme, 'LSI', clts.name
 FROM lsigraphemes AS lsi
 JOIN clts."data/sounds.tsv" AS clts
@@ -244,7 +244,7 @@ ORDER BY lsi.grapheme;
 ```
 
 While vowels in PHOIBLE but not in LSI can be listed as
-```sqlite
+```sql
 SELECT phoible.grapheme, 'PHOIBLE', clts.name
 FROM phoiblegraphemes AS phoible
 JOIN clts."data/sounds.tsv" AS clts
