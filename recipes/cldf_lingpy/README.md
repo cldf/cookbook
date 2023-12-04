@@ -16,7 +16,7 @@ Similarly, reading a wordlist, is as straighforward as pointing to the metadata-
 >>> wl = from_cldf('cldf/Wordlist-metadata.json')
 ```
 
-This makes it also possible to compare quickly from CLDF to Nexus and a couple of other formats:
+This makes it also possible to convert quickly from CLDF to Nexus and a couple of other formats:
 
 ```
 >>> from lingpy.convert.strings import write_nexus
