@@ -106,5 +106,56 @@ i.e. in a way that ignores that we are dealing with objects on the surface of th
 
 ## Investigating GeoJSON data with `spatialite`
 
-A simple way to do geographically informed analysis on GeoJSON data is loading the data into a [SQLite]() database
-with [spatialite]() support.
+A simple way to do geographically informed analysis on GeoJSON data is loading the data into a [SQLite](https://sqlite.com/) database
+with [spatialite](https://www.gaia-gis.it/fossil/libspatialite/home) support.
+
+On Ubuntu, [mod_spatialite](https://www.gaia-gis.it/fossil/libspatialite/wiki?name=mod_spatialite) can be installed via
+```shell
+$ sudo apt install libsqlite3-mod-spatialite
+```
+
+Then we can use the [geojson-to-sqlite](https://pypi.org/project/geojson-to-sqlite/) tool to load the language areas of the Language Atlas into an SQLite database:
+```shell
+$ geojson-to-sqlite laop.sqlite features ../cldf-datasets/languageatlasofthepacificarea/cldf/languages.geojson --spatialite
+```
+
+With `sqlite3`, we can use the `spatialite` functionality after loading the extension:
+```shell
+$ sqlite3 laop.sqlite 
+SQLite version 3.37.2 2022-01-06 13:25:41
+Enter ".help" for usage hints.
+sqlite> SELECT load_extension('mod_spatialite');
+```
+
+To make sure, `spatialite` does indeed compute things in a geographically informed way, let's
+compare the distances between Ande and Fijian and between Fijian and Samoan:
+
+```sql
+sqlite> select GeodesicLength(makeline(Centroid(l1.geometry), Centroid(l2.geometry)))
+   ...> from features as l1, features as l2 where l1.title = 'Ande' and l2.title = 'Fijian';
+1225051.19934628
+sqlite> 
+sqlite> select GeodesicLength(makeline(Centroid(l1.geometry), Centroid(l2.geometry)))
+   ...> from features as l1, features as l2 where l1.title = 'Fijian' and l2.title = 'Samoan';
+1166122.01078725
+```
+
+And indeed, both are about the same length, ~1,200,000 meters, or roughly 1,200km. Let's break this down.
+
+1. All GeoJSON features are stored as rows of the table `features`, with members of their `properties` object available as columns, e.g. `title`.
+3. The `geometry` column is equipped with the `spatialite` "magic", i.e. its values can be passed into the `spatialite` functions where a geographic data structure is expected.
+4. We want to compute proper [great-circle distances](https://en.wikipedia.org/wiki/Great-circle_distance), which is done in `spatialite` with the `GeodesicLength` function.
+5. The `GeodesicLength` function expects a line as argument, thus we make one using the `makeline` function.
+6. `makeline` expects two points, the start and the end of the line as arguments. The Glottolog coordinate is not available in the dataset's GeoJSON files, but we can instead compute the `Centroid`s of the speaker areas!
+7. We select the two areas by joining the `features` table twice, using different aliases, and applying proper filter criteria for each join.
+
+As could be expected from looking at [`spatialite`'s extensive function reference](https://www.gaia-gis.it/gaia-sins/spatialite-sql-5.1.0.html), we can do a lot more, e.g. computing
+areas:
+```sql
+sqlite> select title, Area(geometry, true) AS a from features where title in ('Samoan', 'Fijian', 'Ande') order by a desc;
+Fijian|5497432116.0774
+Samoan|3851329666.53359
+Ande|183242601.080712
+```
+Note that we passed a second argument to `Area`, forcing true area computation on the ellipsoid, with results
+again using meter as unit. Thus the number ~5500000000 for Fijian means 5,500,000,000 m² or 5,500 km² - which is at least in the ballpark of the number given on Wikipedia for the Republic of Fiji.
