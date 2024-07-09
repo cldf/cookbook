@@ -1,9 +1,7 @@
 
 # CLDF + SQL
 
-## SQL: What and why?
-
-SQL - the Structured Query Language
+## SQL - the Structured Query Language
 
 ### A DSL (domain-specific language)
 
@@ -14,74 +12,104 @@ SQL is a domain-specific language,
 It is not a general purpose language like Python, so among other things it does not support file reading, 
 writing, file system operations, etc.
 
-As DSL it may be comparable to [POSIX Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression), and like
-RegExes, SQL is well supported and integrated in as data access DSL in general purpose languages like
+As DSL it is similar to [POSIX Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression), and like
+RegExes, SQL is well supported and integrated as data access DSL in general purpose languages like
 R (via [RSQLite](https://cran.r-project.org/web/packages/RSQLite/vignettes/RSQLite.html))
 and Python (via the [sqlite3 module](https://docs.python.org/3/library/sqlite3.html)).
 
 
-### SQL is old.
+### SQL is old
 
-terminology like "join", "select", "group by", "intersect", "union" comes from SQL!
+SQL was introduced in 1970. Thus, terminology like "join", "select", "group by", "intersect", "union",
+which is found in many programming languages, comes from SQL!
 
-Learning SQL is a bit like learning Latin. Makes it soemwhat easier to understand all of its derivatives.
-But the only people speaking it are somewhat strange. In the case of SQL, though, the Vatican is a
-really cool place!
+E.g. Python's [itertools.groupby](https://docs.python.org/3/library/itertools.html#itertools.groupby)
+or [dplyr's `join_*` functions](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/join).
+
+Learning SQL is a bit like learning Latin. Knowing SQL makes it somewhat easier to understand all of its derivatives.
+But the only people speaking it are a bit strange :)
 
 SQL is (still) good to have on your CV if you ever apply for data scienctist jobs. 
 [Google](https://www.google.com/search?q=is+sql+needed+for+data+science)
 has snippets saying "extremely important" and "absolutely necessary" on the first page of results for 
-"is sql needed for data science" :)
+"is sql needed for data science" ...
 
 
-### SQL is *declarative* (as opposed to *imperative*), i.e. no "control flow statements", 
+### SQL is *declarative* (as opposed to *imperative*)
 
 > SQL is an example of a declarative programming language. Statements do not describe computations directly, but instead describe the desired result of some computation.
 
-Also, modularization via functions is not a thing (we'll see ways to modularize SQL below, though).
+One of the more visible aspects of declarative languages is the lack of "control flow statements" - no
+loops, no if statements.
+
+Since an SQL program does not list operations in order of execution, modularization does not work via
+functions that encapsulate procedural operations, but rather in aliasing parts of a result.
 
 Example:
-- values for languages without glottocodes, Python vs. SQL
-- or non-cognate coded lexical items?
 
-While this "lack of expressiveness" might seem like a disadvantage, it actually is advantageous to judge
-applicability of SQL: If you can fit your data aggregation needs into one statement (one *query*) (and possibly a handful of
-*views*), SQL could be a good choice.
+To obtain a list of all languages without Glottocode in a CLDF dataset, we could run the following
+imperative Python code:
+```python
+languages = []
+for language in cldf.objects('LanguageTable'):
+    if language.cldf.glottocode is None:
+        languages.append(language)
+```
+which is roughly equivalent to the following SQL run on a SQLite database loaded with the CLDF dataset:
+```sql
+SELECT * FROM LanguageTable WHERE cldf_glottocode IS NULL;
+```
+
+While the "lack of expressiveness" (it's harder to create complex SQL code, because you cannot simply string together instructions) 
+might seem like a disadvantage, it actually is advantageous to judge applicability of SQL: 
+If you can fit your data aggregation needs into one statement (one *query*) (and possibly a handful of
+*CTEs*), SQL could be a good choice.
 
 
-### SQL is (possibly too) big:
-- stored procedures
-- SQL ALTER *
-- SQL INSERT/UPDATE/DELETE *
-- indexes
-- ...
+### SQL is (possibly too) big
+
+SQL consists of multiple "sublanguages". It cannot only be used to retrieve data, but also to create and
+manipulate the data schema (i.e. create and manipulate tables, indexes, etc.).
+
+SQL also includes a sublanguage to manipulate data, i.e. `INSERT`, `UPDATE` and `DELETE` data. And since
+most SQL database management systems allow access to the data by multiple clients simultaneously, there
+also needs to be support for "transactions" - i.e. a way to specify a set of SQL queries that must be guaranteed
+to operate on a consistent state of the database, undisturbed by modifications by other clients.
+
+In the context of CLDF datasets we are only interested in "Data Query Language" part of SQL, and treat
+databases basically as read-only data stores.
 
 
 ### SQL is - unfortunately - somewhat diverse
 
+The size of the SQL standard is probably one of the reasons that SQL implementations - i.e. relational
+database management systems (RDBMSs) - are often a bit idiosyncratic.
+
 > Despite the existence of standards, virtually no implementations in existence adhere to it fully, and most SQL code requires at least some changes before being ported to different database systems.
 
-- even common functions may have (very) different names (`string_agg` vs `group_concat`).
+While we might expect that the more complex or cryptic parts of the standard contribute more to this
+idiosyncracy, there are also quite commonly used functionalities which behave differently across implementations.
+E.g. common functions may have (very) different names (cf. [PostgreSQL `string_agg`](https://www.postgresql.org/docs/9.0/functions-aggregate.html) vs 
+[SQLite's [`group_concat`](https://www.sqlite.org/lang_aggfunc.html#group_concat)) and implementations may support different
+sets of atomic column data types.
 
-But SQL is also very well supported in IDEs like PyCharm (professional). You can associate a project with a database
-and get a query console to write SQL with tab-completion for table and column names, function names, etc.
+But this diversity/idiosyncrasy is alleviated by SQL being very well supported in IDEs like PyCharm (professional). 
+You can associate a project with a database and get a query console to write SQL with tab-completion for table and column names, function names, etc.
 
 <img src="pycharm_sqlite.png" width="400" />
 
 
 ### SQLite
 
-SQL the language vs. database managers aka RDBMS or database engines
-
-But the reason why SQL is a good choice for data manipulation in linguistics is SQLite, i.e. an
-ubiquitous, [database engine](https://en.wikipedia.org/wiki/Database_engine) that works on **single-file** databases.
-So this diversity only hurts us by making googling for SQL solutions a bit trickier. (But it's good to know 
+But a major reason why SQL is a good choice for data manipulation in linguistics (or in research data analysis in general) is 
+SQLite, an ubiquitous, [database engine](https://en.wikipedia.org/wiki/Database_engine) that works on 
+**single-file** databases. So SQL's diversity only hurts us by making googling for SQL solutions a bit trickier. (But it's good to know 
 that should we run into performance issues with SQLite, PostgreSQL is a likely solution - and is known for adhering "most"
 to the SQL standard.)
 
 SQLite is an embedded SQL database engine (embedded in the code accessing the database) as opposed to
-RDBMS like PostgreSQL or MySQL, where the database engine runs in a server-like process and is accessed
-over the network (or sockets). Being embeddable means SQLite is everywhere! Firefox stores its bookmarks in SQLite
+RDBMSs like PostgreSQL or MySQL, where the database engine runs in a server-like process and is accessed
+over the network (or sockets) by clients. Being embeddable means SQLite is everywhere! Firefox stores its bookmarks in SQLite:
 
 ```sql
 sqlite> select visit_count, url from moz_places where url like '%ufggym%' order by visit_count desc limit 3;
@@ -99,19 +127,75 @@ sqlite> select count(*) from PhotoTable;
 44111
 ```
 
-SQLite adds functionality like input and output.
+SQLite also adds functionality like input and output on top of running SQL queries.
 
-Example: Writing query results to CSV
+[Importing CSV](https://www.sqlitetutorial.net/sqlite-import-csv/):
 
-The SQLite database format is also among the ["preferred" formats of the Library of Congress](https://www.loc.gov/preservation/resources/rfs/data.html)
+```sql
+sqlite> .mode csv
+sqlite> .import wals/cldf/languages.csv wals_langs
+sqlite> .schema
+CREATE TABLE IF NOT EXISTS "wals_langs"(
+  "ID" TEXT,
+  "Name" TEXT,
+  "Macroarea" TEXT,
+  "Latitude" TEXT,
+  "Longitude" TEXT,
+  "Glottocode" TEXT,
+  "ISO639P3code" TEXT,
+  "Family" TEXT,
+  "Subfamily" TEXT,
+  "Genus" TEXT,
+  "GenusIcon" TEXT,
+  "ISO_codes" TEXT,
+  "Samples_100" TEXT,
+  "Samples_200" TEXT,
+  "Country_ID" TEXT,
+  "Source" TEXT,
+  "Parent_ID" TEXT
+);
+```
+
+> ![NOTE]
+> Tools like the `csvsql` command from the `csvkit` package exploit these functionalities of sqlite:
+
+```shell
+$ csvsql wals/cldf/languages.csv --query "SELECT count(*) FROM languages WHERE Latitude > 0"
+count(*)
+1724
+```
+
+[Exporting query results to CSV](https://www.sqlitetutorial.net/sqlite-export-csv/)
+
+```sql
+sqlite> .mode csv
+sqlite> .import ../../wals/wals/cldf/languages.csv wals_langs
+sqlite> .headers on
+sqlite> .output langs.csv
+sqlite> SELECT * FROM wals_langs;
+sqlite> .quit
+```
+
+If you want more control over the CSV format - like changing delimiters or quoting behaviour - you should
+access the data using the an SQLite connection from your preferred programming language, though.
+
+Last but not least, the SQLite database format is also among the ["preferred" formats of the Library of Congress](https://www.loc.gov/preservation/resources/rfs/data.html)
 for the archiving of datasets (together with CSV, JSON, and a couple more)
 
-> maximizing the chances for survival and continued accessibility of creative content well into the future.
+> [maximizing the chances for survival and continued accessibility of creative content well into the future.](https://www.sqlite.org/locrsf.html)
+
+> ![WARNING]
+> While SQLite is ubiquitous, not each SQLite engine you encounter will have the same capabilities.
+> There are a lot of extensions for SQLite - e.g. for [mathematical functions](https://www.sqlite.org/draft/lang_mathfunc.html)
+> but whether they are available in a particular SQLite engine depends on whether that engine has been compiled
+> with support for it - i.e. cannot be changed at runtime. For example the SQLite engine shipped with Python does
+> not have a `stdev` function. (But we will see below, how this can be remedied.)
 
 
 ## CLDF SQL
 
 Why is SQL(ite) useful when dealing with CLDF data?
+
 Each CLDF dataset can be converted to a SQLite database, running the `cldf createdb` command installed
 with `pycldf`. This SQLite database makes uniform access a lot easier for tools that are not CLDF aware:
 - tables are named with component names rather than filenames, so data about languages will be stored
@@ -342,6 +426,16 @@ In the follwing example from doreco, we use the `row_number` window function to 
 for a word with an index number, and then only select the first ones to get "word initial phones":
 
 https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/etc/views.sql#L3-L12
+
+
+### User-defined functions with Python
+
+https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.create_aggregate
+
+Example:
+
+https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/dorecocommands/query.py#L20-L43
+https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/dorecocommands/query.py#L65
 
 
 ### A "real world" example
