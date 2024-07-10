@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS "wals_langs"(
 );
 ```
 
-> ![NOTE]
+> [!NOTE]
 > Tools like the `csvsql` command from the `csvkit` package exploit these functionalities of sqlite:
 
 ```shell
@@ -201,7 +201,7 @@ for the archiving of datasets (together with CSV, JSON, and a couple more)
 
 > [maximizing the chances for survival and continued accessibility of creative content well into the future.](https://www.sqlite.org/locrsf.html)
 
-> ![WARNING]
+> [!WARNING]
 > While SQLite is ubiquitous, not each SQLite engine you encounter will have the same capabilities.
 > There are a lot of extensions for SQLite - e.g. for [mathematical functions](https://www.sqlite.org/draft/lang_mathfunc.html)
 > but whether they are available in a particular SQLite engine depends on whether that engine has been compiled
@@ -643,7 +643,7 @@ seems more transparent than the combined Python+R code it replaces. In particula
 - filter criteria used to exclude certain phones are listed in the `WHERE` clause at the end
   https://github.com/FredericBlum/initial_lengthening/blob/e0dcba8732244bdafb6003e9927651c97720d1da/init_query.sql#L121-L132
 
-> ![NOTE]
+> [!NOTE]
 > Pulling in CLTS data from a separate CLTS SQLite database would have been possible but wasn't necessary
 > because the relevant data was already added when creating the DoReCo CLDF dataset. 
 
