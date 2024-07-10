@@ -3,27 +3,39 @@
 
 ## SQL - the Structured Query Language
 
+SQL is a programming language used in relational database management systems (RDBMS) to manage data.
+
+
 ### A DSL (domain-specific language)
 
-SQL is a domain-specific language,
+SQL is a domain-specific language, i.e. programming language for a particular domain, and consequently
+with a limited, but very specific set of operations, datatypes, etc.
+
+SQL is
 
 > particularly useful in handling structured data, i.e., data incorporating relations among entities and variables.
 
-It is not a general purpose language like Python, so among other things it does not support file reading, 
+SQL is suitable for management of data that is organized according to the [relational model](https://en.wikipedia.org/wiki/Relational_model),
+which is roughly data organized in multiple tables which are linked via *foreign keys*.
+
+SQL is not a general purpose language like Python, so among other things it does not support file reading, 
 writing, file system operations, etc.
 
-As DSL it is similar to [POSIX Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression), and like
-RegExes, SQL is well supported and integrated as data access DSL in general purpose languages like
+As DSL it is similar to [POSIX Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression).
+RegExes provide operations like "match" or "replace" and a special datatype "match", which allows drilling
+to retrieve groups, etc.
+SQL provides operations like "INTERSECT" or "UNION" on datatypes like "TABLE" (a set of rows, similar to "DataFrames").
+
+Like RegExes, SQL is well supported and integrated as data access DSL in general purpose languages like
 R (via [RSQLite](https://cran.r-project.org/web/packages/RSQLite/vignettes/RSQLite.html))
 and Python (via the [sqlite3 module](https://docs.python.org/3/library/sqlite3.html)).
 
 
 ### SQL is old
 
-SQL was introduced in 1970. Thus, terminology like "join", "select", "group by", "intersect", "union",
+SQL was introduced in 1970. Thus, terminology like "JOIN", "SELECT", "GROUP BY", "INTERSECT", "UNION",
 which is found in many programming languages, comes from SQL!
-
-E.g. Python's [itertools.groupby](https://docs.python.org/3/library/itertools.html#itertools.groupby)
+See for example Python's [itertools.groupby](https://docs.python.org/3/library/itertools.html#itertools.groupby)
 or [dplyr's `join_*` functions](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/join).
 
 Learning SQL is a bit like learning Latin. Knowing SQL makes it somewhat easier to understand all of its derivatives.
@@ -43,9 +55,9 @@ One of the more visible aspects of declarative languages is the lack of "control
 loops, no if statements.
 
 Since an SQL program does not list operations in order of execution, modularization does not work via
-functions that encapsulate procedural operations, but rather in aliasing parts of a result.
+functions that encapsulate procedural operations, but rather through aliasing parts of a result.
 
-Example:
+**Example:**
 
 To obtain a list of all languages without Glottocode in a CLDF dataset, we could run the following
 imperative Python code:
@@ -60,10 +72,15 @@ which is roughly equivalent to the following SQL run on a SQLite database loaded
 SELECT * FROM LanguageTable WHERE cldf_glottocode IS NULL;
 ```
 
-While the "lack of expressiveness" (it's harder to create complex SQL code, because you cannot simply string together instructions) 
-might seem like a disadvantage, it actually is advantageous to judge applicability of SQL: 
+Maybe more importantly, SQL does not really support variables and value assignment.
+Thus, it may feel somewhat harder to create complex SQL code, because you cannot as easily "store"
+results of intermediate processoing steps.
+
+While the "lack of expressiveness" might seem like a disadvantage, it actually is advantageous to judge 
+applicability of SQL: 
 If you can fit your data aggregation needs into one statement (one *query*) (and possibly a handful of
-*CTEs*), SQL could be a good choice.
+*CTEs*), SQL could be a good choice. As soon as such a query becomes bigger than "a screenful", you might
+think about alternatives.
 
 
 ### SQL is (possibly too) big
@@ -76,7 +93,7 @@ most SQL database management systems allow access to the data by multiple client
 also needs to be support for "transactions" - i.e. a way to specify a set of SQL queries that must be guaranteed
 to operate on a consistent state of the database, undisturbed by modifications by other clients.
 
-In the context of CLDF datasets we are only interested in "Data Query Language" part of SQL, and treat
+In the context of CLDF datasets we are only interested in the "Data Query Language" part of SQL, and treat
 databases basically as read-only data stores.
 
 
@@ -316,22 +333,10 @@ Getting used to SQL as R user: Maybe start with dbplyr https://dbplyr.tidyverse.
 
 ## SQLite advanced
 
-SQLite offers some advanced features which make it particularly suited for our use cases. We'll look
-at these using a "real-world" example: We will compare phoneme inventories for Malayalam,
-- as described in the PHOIBLE database vs.
-- as extracted from the lexical data in the Linguistic Survey of India.
-
-Of course, comparability of phonemes across datasets is mediated by CLTS, so we'll need the following
-three datasets:
-- PHOIBLE
-- LSI
-- CLTS
-
-All three are available as CLDF datasets, and running `cldf createdb` we can load all three in individual
-SQLite databases:
-```shell
-cldf createdb 
-```
+While the SQL covered in the Software Carpentry lesson is sufficient for a majority of common use
+cases, some "real world" uses we will see below require more advanced features. Even if you probably
+never need all of these, it's good to know that SQLite is a big enough eco-system to have solutions
+for anything you might need :)
 
 
 ### ATTACH DATABASE
@@ -352,10 +357,9 @@ mala1464|MALAYALAM|Malayalam
 
 ### CTEs (aka "inline VIEWs")
 
-A good way to make SQL more modular, by using "named subqueries".
+*Common table expressions* (CTEs) are a good way to make SQL more modular, by using "named subqueries".
 
-> common table expressions (CTE) are temporary result sets defined within the scope of a query.
-https://www.sqlitetutorial.net/sqlite-cte/
+> [CTEs are temporary result sets defined within the scope of a query.](https://www.sqlitetutorial.net/sqlite-cte/)
 
 ```sql
 select count(*) from formtable 
@@ -371,12 +375,20 @@ select count(*) from formtable where cldf_id not in has_cognate;
 
 ### WITH RECURSIVE
 
-https://til.simonwillison.net/sqlite/simple-recursive-cte
+One of the advantages of CTEs over views is that CTEs can be recursive, i.e. invoke themselves.
 
-Example: Split Glottolog classification into individual rows
-https://github.com/glottolog/glottolog-cldf/blob/1eae737024e03d9e32b3b50571ea9997537344ab/cldf/parameters.csv#L4
+For an introduction see https://til.simonwillison.net/sqlite/simple-recursive-cte
+
+**Example:**
+
+The [Glottolog CLDF dataset](https://github.com/glottolog/glottolog-cldf) stores the classification
+of each languoid as value of the [`classification` parameter](https://github.com/glottolog/glottolog-cldf/blob/1eae737024e03d9e32b3b50571ea9997537344ab/cldf/parameters.csv#L4).
+The value is a list of Glottocodes of ancestors of the languoid, concatenated using `/` as delimiter.
+
+With the following recursive CTE we can split such a Glottolog classification (for the languoid Malayalam, mala1464) 
+into individual rows:
 ```sql
-with ancestors(ancestor, classification, level) as (
+with ancestors as (
     select 
         '' as ancestor, 
         v.cldf_value as classification,
@@ -395,7 +407,6 @@ with ancestors(ancestor, classification, level) as (
 )
 select printf('%.*c', level, ' ') || '|- ' || ancestor from ancestors where ancestor != '' order by level;
 ```
-
 prints
 ```shell
 $ sqlite3 glottolog.sqlite < q.sql 
@@ -411,39 +422,124 @@ $ sqlite3 glottolog.sqlite < q.sql
           |- mala1541
 ```
 
+We recursively chop off the first Glottocode from `classification` returning the union of all these
+as result rows.
+
 
 ### Window functions: OVER
 
-https://www.sqlite.org/windowfunctions.html
+> [A window function is an SQL function where the input values are taken from a "window" of one or more rows in the results set of a SELECT statement.](https://www.sqlitetutorial.net/sqlite-window-functions/)
 
-> A window function is an SQL function where the input values are taken from a "window" of one or more rows in the results set of a SELECT statement.
+Window functions are specified using the [OVER keyword](https://www.sqlite.org/windowfunctions.html).
 
-https://www.sqlitetutorial.net/sqlite-window-functions/
+> An SQLite window function performs a calculation on a set of rows that are related to the current row. 
+> Unlike an aggregate function, a window function does not cause rows to become grouped into a single result row. 
+> A window function retains the row identities. Behind the scenes, window functions can access more than just the current row of the query result.
 
-> An SQLite window function performs a calculation on a set of rows that are related to the current row. Unlike an aggregate function, a window function does not cause rows to become grouped into a single result row. a window function retains the row identities. Behind the scenes, window functions can access more than just the current row of the query result.
-
-In the follwing example from doreco, we use the `row_number` window function to augment the list of phones
+In the follwing [example from DoReCo](https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/etc/views.sql#L3-L12), 
+we use the `row_number` window function to augment the list of phones
 for a word with an index number, and then only select the first ones to get "word initial phones":
-
-https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/etc/views.sql#L3-L12
+```sql
+SELECT s.* FROM (
+    SELECT
+        p.*,
+        -- We use a window function to be able to determine the first row in a batch.
+        row_number() OVER (PARTITION BY wd_ID ORDER BY cldf_id) rownum
+    FROM
+        'phones.csv' AS p
+    ) AS s
+WHERE
+    s.rownum = 1 AND s.token_type = 'xsampa';
+```
 
 
 ### User-defined functions with Python
 
-https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.create_aggregate
+As we noted above, not every SQLite engine has the same capabilities. E.g. the one used by Python's
+`sqlite3` module does not have a `stdev` function. Fortunately, we can provide our own functions
+to be used in SQL queries via `sqlite3` - and we can write these functions in Python!
 
-Example:
+To provide our own implementation of `stdev`, we can use the connection method
+[create_aggregate](https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.create_aggregate)
+to register the 
+[implementation](https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/dorecocommands/query.py#L20-L43)
+for [each query](https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/dorecocommands/query.py#L65)
 
-https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/dorecocommands/query.py#L20-L43
-https://github.com/cldf-datasets/doreco/blob/8124db8c45f1186e998d7536401dc6d6dceebb32/dorecocommands/query.py#L65
+
+### JSON
+
+CSVW - the standard underlying CLDF - provides a datatype JSON, i.e. a way to store complex JSON objects 
+serialized as strings in columns of CSV data. To some extent this defeats the purpose of CSVW because
+it circumvents the data validation mechanisms based on columns in tables. On the other hand, this provides
+flexibility e.g. to store arbitrary metadata for objects. As an example look at the `Properties` column
+of contributions in the CLDF dataset for the Language Atlas of the Pacific Area:
+https://github.com/cldf-datasets/languageatlasofthepacificarea/blob/8883352b08516e26261a8e060a40db40f34619fa/cldf/Generic-metadata.json#L105-L109
+
+Values for this column look like this:
+```json
+{
+  "COUNTRY_NAME": "Philippines", 
+  "SOVEREIGN": "Philippines", 
+  "Glottocodes": ["isna1241"]
+}
+```
+
+In the SQLite database created via `cldf createdb` from a CLDF dataset, such columns end up as `TEXT`
+columns:
+```sql
+sqlite> .schema contributiontable
+CREATE TABLE `ContributionTable` (
+    `cldf_id` TEXT NOT NULL,
+    `cldf_name` TEXT,
+    `cldf_description` TEXT,
+    `cldf_contributor` TEXT,
+    `cldf_citation` TEXT,
+    `Rights` TEXT,
+    `Type` TEXT,
+    `Properties` TEXT,
+    PRIMARY KEY(`cldf_id`)
+);
+```
+
+But SQLite has excellent JSON support, i.e. provides functions and syntax to integrate JSON data in
+regular queries.
+
+The query described in the dataset's 
+[USAGE notes](https://github.com/cldf-datasets/languageatlasofthepacificarea/blob/main/USAGE.md#relating-aggregated-shapes-to-the-ecai-shapes)
+uses
+- the `json_extract` function to read JSON objects from `TEXT` columns and extract relevant parts
+- the `json_each` function - a table-valued function turning JSON arrays into result rows
 
 
-### A "real world" example
+## "real world" examples
+
+### Comparing phoneme inventories extracted from a CLDFWordlist with PHOIBLE
+
+From the [LREC paper](https://aclanthology.org/2024.lrec-main.925.pdf)
+"Linguistic Survey of India and Polyglotta Africana: Two Retrostandardized Digital Editions of Large Historical Collections of Multilingual Wordlists":
+
+We will compare phoneme inventories for Malayalam,
+- as described in the PHOIBLE database vs.
+- as extracted from the lexical data in the Linguistic Survey of India.
+
+Of course, comparability of phonemes across datasets is mediated by CLTS, so we'll need the following
+three datasets:
+- PHOIBLE
+- LSI
+- CLTS
+
+All three are available as CLDF datasets, and running `cldf createdb` we can load all three in individual
+SQLite databases:
+```shell
+cldf createdb https://raw.githubusercontent.com/cldf-datasets/phoible/v2.0.1/cldf/StructureDataset-metadata.json phoible.sqlite 
+cldf createdb https://raw.githubusercontent.com/lexibank/lsi/v1.0/cldf/cldf-metadata.json lsi.sqlite 
+cldf createdb https://raw.githubusercontent.com/cldf-clts/clts/v2.3.0/cldf-metadata.json clts.sqlite
+```
 
 ```sql
 ATTACH DATABASE "phoible.sqlite" AS phoible;
 ATTACH DATABASE "clts.sqlite" AS clts;
-ATTACH DATABASE "lsi-cldf/lsi.sqlite" AS lsi;
+ATTACH DATABASE "lsi.sqlite" AS lsi;
 
 WITH
   lsigraphemes AS (
@@ -496,14 +592,70 @@ order by g.source, g.grapheme;
 - functions like `substr`, `instr`
 
 
-### JSON
+### Working with large datasets
 
--> Language Atlas example
+[Frederic's](https://github.com/FredericBlum) paper on initial lengthening of consonants uses the
+[DoReCo dataset](https://github.com/cldf-datasets/doreco/).
+
+The schema of this dataset (as ERD) looks as shown here:
+https://github.com/cldf-datasets/doreco/blob/main/USAGE.md#overview
+
+This dataset is pretty big:
+```shell
+$ du -sh doreco.sqlite 
+402M	doreco.sqlite
+```
+with about 1,900,000 time-aligned phones:
+```sql
+sqlite> select count(*) from "phones.csv";
+1863702
+```
+
+Looping through the "phones.csv" table takes about 1.4 secs in SQLite:
+```shell
+$ time sqlite3 doreco.sqlite 'select * from "phones.csv"' > phones.csv
+
+real	0m1,352s
+user	0m1,174s
+sys	0m0,144s
+```
+vs. 75 secs reading the CSV data of the CLDF dataset using `pycldf`.
+```shell
+$ time python loop.py 
+1863701
+
+real	1m14,417s
+user	1m14,327s
+sys	0m0,076s
+```
+
+This is why we recommend to access the DoReCo data via SQLite:
+https://github.com/cldf-datasets/doreco/blob/main/USAGE.md#data-access-via-sql-queries
+
+And that's what Frederic did to aggregate the single, big data frame to feed the models:
+https://github.com/FredericBlum/initial_lengthening/blob/main/init_query.sql
+
+While this query is definitly on the bigger side, approaching "too big to be transparent", it still
+seems more transparent than the combined Python+R code it replaces. In particular,
+
+- the columns of the resulting data frame are described right at the top:
+  https://github.com/FredericBlum/initial_lengthening/blob/e0dcba8732244bdafb6003e9927651c97720d1da/init_query.sql#L2-L21
+- filter criteria used to exclude certain phones are listed in the `WHERE` clause at the end
+  https://github.com/FredericBlum/initial_lengthening/blob/e0dcba8732244bdafb6003e9927651c97720d1da/init_query.sql#L121-L132
+
+> ![NOTE]
+> Pulling in CLTS data from a separate CLTS SQLite database would have been possible but wasn't necessary
+> because the relevant data was already added when creating the DoReCo CLDF dataset. 
 
 
-## SQL as ideal intermediate data aggregation step between raw data and analysis (e.g. in R)
+
+## SQL as ideal intermediate data aggregation step between raw data and analysis
+
+As shown in the "initial lenghtening" example, SQL can work as ideal, intermediate data aggregation step
+between raw (CLDF) data and analysis (in R, Python or anything else):
 
 - CLDF SQL helps with re-use (of code, etc.) because it focuses on the commonalitites between CLDF datasets
-- DoReCo: SQLite is fast! https://github.com/FredericBlum/initial_lengthening/blob/main/init_query.sql
-
-  When the result is supposed to be a single table to be fed into R, SQL makes for a transparent aggregation.
+- Accessing data from multiple datasets is easy and efficient
+- SQLite is fast
+- SQL and the resulting data frame provide a transparent, well-described workflow artefact, which is easy
+  to re-create.
