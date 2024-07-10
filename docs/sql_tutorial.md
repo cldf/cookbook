@@ -214,13 +214,19 @@ for the archiving of datasets (together with CSV, JSON, and a couple more)
 Why is SQL(ite) useful when dealing with CLDF data?
 
 Each CLDF dataset can be converted to a SQLite database, running the `cldf createdb` command installed
-with `pycldf`. This SQLite database makes uniform access a lot easier for tools that are not CLDF aware:
+with `pycldf`. This SQLite database makes uniform access a lot easier for tools that are not CLDF aware
+(see [CLDF SQL](https://github.com/cldf/cldf/blob/master/extensions/sql.md):
 - tables are named with component names rather than filenames, so data about languages will be stored
   in a table called `LanguageTable`, no matter what the file in the CLDF dataset was called (e.g. 
   [`societies.csv` in the case of D-PLACE datasets](https://github.com/D-PLACE/dplace-dataset-ea/tree/main/cldf))
 - columns are named with CLDF property terms rather than - possibly custom - column names. Thus, the column
   holding Glottocodes will always be called `cldf_glottocode`
 - foreign keys are inferred from CLDF reference properties
+
+Thus, while you'd have to know about things like CSV dialects, file and columns names of individual
+datasets if you access the CSV files of a CLDF dataset directly, you could
+["code against the spec"](https://betterprogramming.pub/code-against-interfaces-not-implementations-37b30e7ab992)
+if you access the data via CLDF SQL (and write code that can be applied to more than one dataset).
 
 We can create a SQLite database loaded with version v2020.3 of WALS running
 ```shell
