@@ -6,9 +6,9 @@
 SQL is a programming language used in relational database management systems (RDBMS) to manage data.
 
 
-### A DSL (domain-specific language)
+### SQL is a DSL
 
-SQL is a domain-specific language, i.e. programming language for a particular domain, and consequently
+SQL is a domain-specific language (DSL), i.e. programming language for a particular domain, and consequently
 with a limited, but very specific set of operations, datatypes, etc.
 
 SQL is
